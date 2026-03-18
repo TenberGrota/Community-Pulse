@@ -3,1091 +3,514 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community Pulse: July 2024 to June 2025 Report</title>
+    <title>Instant Reply Analysis Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #eef5ff; /* Light grey background */
-            color: #333; /* Default text color */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --brand: #002358;
+            --brand-light: #f0f4f9;
         }
-        .container {
-            max-width: 1200px; /* Increased max-width for overall container */
-            margin-left: auto;
-            margin-right: auto;
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f1f5f9; 
+            color: #002358;
+            scroll-behavior: smooth;
         }
-        .kpi-card {
-            background-color: white;
-            border-radius: 0.75rem; /* Rounded corners */
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* Subtle shadow */
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            border-left: 5px solid #003f5c; /* Left border accent */
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .kpi-card:hover {
-            transform: translateY(-5px); /* Slight lift on hover */
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1); /* Enhanced shadow on hover */
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
         }
+
         .chart-container {
             position: relative;
-            margin: auto;
-            height: 40vh;
+            height: 280px;
             width: 100%;
-            max-width: 900px;
-            max-height: 400px;
-        }
-        .section-title {
-            color: #003f5c; /* Primary dark blue for titles */
-        }
-        .card {
-            background-color: white;
-            border-radius: 0.75rem;
-            padding: 1.5rem; /* Default padding for all cards */
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Added to .card */
-        }
-        .card:hover { /* Added hover effect to .card */
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
-        }
-        .audit-item:last-child {
-            border-bottom: none; /* No border for the last item */
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .chart-container-large {
-            position: relative;
-            margin: auto;
-            height: 60vh;
-            width: 100%;
-            max-width: 900px;
-            max-height: 600px;
-        }
-        /* Styles for the new chart grid section */
-        .main-chart-grid-container { /* Renamed from .main-container to avoid conflict */
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 100%;
-            max-width: 1200px;
-            box-sizing: border-box;
-            margin: 0 auto; /* Center the container */
-        }
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .chart-card {
-            background-color: #f9fafb;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-        .chart-card canvas { /* Specific rule for canvas inside chart-card */
-            max-height: 250px;
-            width: 100%;
-            display: block; /* Ensure canvas is block-level */
         }
 
-        /* Legend styles for combined chart */
-        .legend-container {
-            display: flex;
-            justify-content: center; /* Changed from flex-start to center */
-            flex-wrap: wrap;
-            margin-top: -60px; /* Adjusted to move it up even more */
-            padding-top: 0; /* Removed padding */
-            /* Removed padding-left: 120px; */
-            gap: 15px;
-            font-size: 0.8rem; /* Reduced font size here */
-            color: #666;
-            /* Removed margin-left: 4rem; */
+        .progress-bar-bg {
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            height: 6px;
         }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-        }
-
-        .legend-color-box {
-            width: 18px;
-            height: 18px;
-            margin-right: 8px;
-            border-radius: 4px;
-        }
-
-        /* Styles specific to Audit section cards */
-        #audits .card {
-            min-height: 450px; /* Increased min-height to ensure more space for the chart */
-            display: flex; /* Use flexbox for centering content */
-            flex-direction: column; /* Stack content vertically */
-            align-items: center; /* Center horizontally */
-            justify-content: center; /* Center vertically */
-        }
-        #audits .section-title {
-            color: #2c3e50; /* Darker title color */
-        }
-        /* Canvas styling for responsiveness in Audit section */
-        #audits canvas {
-            width: 100%; /* Ensure canvas takes full width of its container */
-            height: 400px; /* Set a more generous default height for the canvas itself */
-            display: block;
-            margin: 0 auto;
-        }
-
-        /* Styles specific to Regional Distribution section */
-        #regional-distribution {
-            /* Removed background, border-radius, box-shadow to remove outer white box */
-            /* Removed margin: 2rem auto; for left alignment */
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
-            /* Removed padding as the inner card will have it */
-        }
-        #regional-distribution .chart-wrapper {
-            /* Removed max-width to let chart span more */
-            margin: 0 auto; /* Center the wrapper, but let its content expand */
-        }
-        #regional-distribution canvas {
-            width: 100% !important; /* Make canvas responsive to its container width */
-            height: 500px; /* Increased fixed height for consistency */
-            display: block;
-            margin: 2rem auto; /* Center the canvas */
-            /* Add temporary border for debugging if needed */
-            /* border: 1px solid red; */
-        }
-        /* Modified for legend inside card */
-        #regional-distribution .card .legend-item {
-            display: flex;
-            align-items: center;
-            margin: 0.5rem 1rem;
-        }
-        #regional-distribution .card .legend-color-box {
-            width: 1rem;
-            height: 1rem;
-            border-radius: 0.25rem;
-            margin-right: 0.5rem;
-        }
-        /* Fix for info-section rgba */
-        .info-section {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Corrected rgba syntax */
-            padding: 24px;
-            width: 100%;
-            max-width: 900px;
-            box-sizing: border-box;
-        }
-        /* Added specific CSS for combinedChart to ensure it has height */
-        #combinedChart { /* Apply styles to both charts */
-            display: block;
-            width: 100%;
-            height: 400px; /* Explicit height */
-            max-width: 900px; /* Keep it from getting too wide */
-            margin: 0 auto; /* Center it */
-        }
-        /* Styles for footnotes */
-        .footnote {
-            font-size: 0.75rem; /* Smaller font size */
-            margin-left: 4rem; /* Indent the footnotes by 4rem */
-            color: #666; /* Slightly darker grey for readability */
-        }
-
-        /* Styles for the bar graph container under 2.1 */
-        /* Note: .graph-container itself will now inherit .card styles for background, shadow, hover */
-        .graph-container {
-            font-family: 'Inter', sans-serif;
-            width: 80%; /* Adjust as needed */
-            max-width: 900px; /* Limit its width */
-            margin: 20px auto; /* Centered with vertical margin */
-            padding: 20px; /* Padding for content inside the card */
-        }
-
-        .bar-wrapper {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .bar-label {
-            width: 100px;
-            text-align: right;
-            padding-right: 15px;
-            font-weight: bold;
-            color: #333;
-        }
-        .bar-scale {
-            flex-grow: 1;
-            height: 25px;
-            background-color: #eee;
-            border-radius: 5px;
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        .bar {
+        .progress-bar-fill {
             height: 100%;
-            border-radius: 5px;
-            position: relative;
-            transition: transform 0.2s ease-out;
-            cursor: pointer;
-        }
-        .bar:hover {
-            transform: scaleY(1.1);
+            border-radius: 999px;
+            transition: width 1s ease-in-out;
         }
 
-        .bar::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            right: -10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease-in-out;
-            z-index: 10;
-        }
-
-        .bar:hover::after {
-            opacity: 1;
-        }
-
-        .x-axis {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            padding-left: 115px;
-            padding-right: 15px;
-            color: #555;
-            font-size: 0.9em;
-        }
-        .x-axis-label {
-            text-align: center;
-            min-width: 40px;
-        }
-
-        /* Custom colors for the logo */
-        .logo-blue {
-            color: #2b4594; /* A deep blue for the text */
-        }
-        /* Removed .logo-purple as SVG is replaced by JPG */
-
-        /* Styles for the JPG image in the header */
-        .header-image {
-            display: block; /* Ensures it takes up its own line and allows margin-auto */
-            margin: 0 auto; /* Center the image horizontally */
-            max-width: 600px; /* Control the maximum width of the image */
-            height: auto; /* Maintain aspect ratio */
-            margin-top: 10px; /* Space below the title */
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #002358; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #001a42; }
     </style>
 </head>
-<body>
-
-    <header class="bg-[#EEF5FF] shadow-md">
-        <div class="container mx-auto px-6 py-8 text-center">
-            <!-- Replaced SVG with JPG image -->
-            <img src="https://raw.githubusercontent.com/TenCovidence/Community-Pulse/main/Community%20Pulse%20Logo.png"
-                 alt="Community Pulse ECG Logo"
-                 class="header-image"
-                 onerror="this.onerror=null; this.src='https://placehold.co/250x60/cccccc/333333?text=Logo+Error';">
+<body class="antialiased pb-20">
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/70 backdrop-blur-lg border-b border-slate-200 mb-8">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight" style="color: #002358;">Report</span>
+            </div>
+            <div class="flex gap-4 items-center">
+                <span class="hidden md:inline text-sm font-medium text-slate-500">Last updated: 19 March 2026</span>
+                
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <main class="container mx-auto px-6 py-12">
-        <section id="summary" class="mb-16">
-            <h2 class="text-3xl font-bold text-left mb-6 section-title">Executive Summary</h2>
-            
-            <!-- New wrapping div with card style -->
-            <div class="card p-6">
-                <!-- First introductory paragraph -->
-                <p class="text-left text-gray-600 mb-4">
-                    This report provides an overview of the Community Team’s support activity through GrooveHQ inbox from July 2024 to June 2025. It focuses on trends in ticket volume, user queries across review stages, regional distribution, and common support topics.
-                </p>
-                
-                <!-- Introduction to key insights -->
-                <p class="text-left text-gray-600 mb-2">
-                    Key insights include:
-                </p>
-                
-                <!-- The unordered list for key insights -->
-                <ul class="list-none space-y-3 text-gray-600 mb-4">
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-3" style="color: #003f5c;">&#x23F3;</span>
-                        <div>
-                            <strong>Response time performance</strong> remained strong, with a consistently low median response time that meets our service expectations.
+    <main class="max-w-7xl mx-auto px-6">
+        <!-- Title Section -->
+        <div class="mb-10 text-center md:text-left">
+            <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight" style="color: #002358;">Canned reply pain point tag analysis</h1>
+            <p class="text-slate-500 text-base md:text-[1.1rem] w-full font-medium leading-relaxed tracking-tight">
+                Analysis of support tickets (from 1 July 2025 to 17 March 2026) that used the invitation-related canned replies (CR) in Groove and their Pain Point tag application.
+            </p>
+        </div>
+
+        <!-- Comprehensive Executive Summary Card -->
+        <div class="glass-card p-10 mb-10 overflow-hidden relative">
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="w-full lg:w-1/4 border-b lg:border-b-0 lg:border-r border-slate-200 pb-8 lg:pb-0 lg:pr-8">
+                    <div class="mb-8">
+                        <h3 class="text-6xl font-black" style="color: #002358;">503</h3>
+                        <p class="text-slate-500 text-sm mt-1">Total relevant tickets</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold text-slate-600">Tagged</span>
+                            <span class="text-sm font-bold" style="color: #A7007E;">210</span>
                         </div>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-3" style="color: #003f5c;">&#128269;</span>
-                        <div>
-                            <strong>Top queried review stages</strong> were identified, along with the most frequent types of user issues within those stages.
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold text-slate-600">Untagged</span>
+                            <span class="text-sm font-bold" style="color: #0E8570;">293</span>
                         </div>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-3" style="color: #003f5c;">&#127760;</span>
+                    </div>
+                </div>
+
+                <div class="w-full lg:w-1/3 flex flex-col items-center">
+                    <div style="height: 240px; width: 240px;">
+                        <canvas id="overallDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="w-full lg:w-5/12">
+                    <h3 class="text-2xl font-black mb-6" style="color: #002358;">Overview</h3>
+                    <div class="grid grid-cols-2 gap-8 mb-8">
                         <div>
-                            <strong>Regional ticket distribution</strong> highlighted geographic patterns in support demand, including the most commonly used email domains per region.
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-3 h-3 rounded-full" style="background-color: #A7007E;"></div>
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tagged</span>
+                            </div>
+                            <div class="text-4xl font-black" style="color: #A7007E;">41.7%</div>
                         </div>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-3" style="color: #003f5c;">&#129302;</span>
                         <div>
-                            <strong>Chatbot (Helply) engagement</strong> data offered additional perspective on recurring support needs and user behavior in self-service contexts.
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-3 h-3 rounded-full" style="background-color: #0E8570;"></div>
+                                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Untagged</span>
+                            </div>
+                            <div class="text-4xl font-black" style="color: #0E8570;">58.3%</div>
                         </div>
-                    </li>
-                </ul>
-                
-                <!-- Final concluding paragraph -->
-                <p class="text-left text-gray-600">
-                    The analysis in this report will inform targeted improvements to the inbox support process and guide resource development efforts aimed at reducing preventable queries and improving user experience.
-                </p>
-            </div>
-        </section>
-
-        <hr class="border-t-2 border-gray-200 my-16"> <!-- Visual separator -->
-
-        <section id="kpis" class="mb-16">
-            <h2 class="text-3xl font-bold text-left mb-2 section-title">1. Community Support at a Glance</h2>
-            <!-- Paragraph now left-aligned and without max-width -->
-            <p class="text-left text-gray-600 mb-8">
-                Core metrics and performance highlights <br>
-                Stakeholders: All
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 justify-center">
-                <div class="kpi-card text-center">
-                    <div class="text-4xl mb-2" style="color: #ff764a;">&#128195;</div>
-                    <p class="text-4xl font-extrabold" style="color: #003f5c;">28,404<sup>a</sup></p>
-                    <p class="text-lg text-gray-600 mt-2">Total Tickets</p>
-                </div>
-                <div class="kpi-card text-center">
-                    <div class="text-6xl mb-2" style="color: #ffa600;">&#x1F551;</div>
-                    <p class="text-4xl font-extrabold" style="color: #003f5c;">1h 4m<sup>a</sup></p>
-                    <p class="text-lg text-gray-600 mt-2">Median First Response Time</p>
-                </div>
-                <div class="kpi-card text-center">
-                    <div class="text-4xl mb-2" style="color: #7a5195;">&#9989;</div>
-                    <p class="text-4xl font-extrabold" style="color: #003f5c;">57m 27s<sup>a</sup></p>
-                    <p class="text-lg text-gray-600 mt-2">Median Resolution Time</p>
-                </div>
-                <div class="kpi-card text-center">
-                    <div class="text-4xl mb-2" style="color: #bc5090;">&#128578;</div>
-                    <p class="text-4xl font-extrabold" style="color: #003f5c;">Positive<sup>b</sup></p>
-                    <p class="text-lg text-gray-600 mt-2">Overall User Sentiment</p>
-                </div>
-                <div class="kpi-card text-center">
-                    <div class="text-4xl mb-2" style="color: #3f7b8e;">&#128077;</div>
-                    <p class="text-4xl font-extrabold" style="color: #003f5c;">91.49%<sup>a</sup></p>
-                    <p class="text-lg text-gray-600 mt-2">Team CSAT</p>
-                </div>
-            </div>
-            <!-- KPI attribution paragraph (correctly placed) -->
-            <p class="footnote mt-8 text-left">a - generated by GrooveHQ<br>b - analysed using <a href="https://doi.org/10.2478/seeur-2023-0043" target="_blank" class="text-blue-600 hover:underline">VADER</a> through a Python script: 81.7% positive, 12% neutral, 6.3% negative.</p>
-        </section>
-
-        <hr class="border-t-2 border-gray-200 my-16"> <!-- Visual separator -->
-
-        <section id="groovehq-deep-dive" class="mb-16">
-            <h2 class="text-3xl font-bold text-left mb-2 section-title">2. GrooveHQ Deep Dive </h2>
-            <p class="text-left text-gray-600 mb-8">
-                Trends and insights from the support inbox analysis<br>
-                Stakeholders: All
-            </p>
-
-            <h3 class="text-2xl font-bold text-left mb-2 section-title ml-8">2.1. Ticket Queries by Review Stage</h3>
-            <!-- New graph and description inserted here -->
-            <p class="text-left text-gray-600 mb-8 ml-8">
-                We analysed support ticket volumes by platform stage to identify where users most frequently encounter issues. The <strong>Screening</strong> stage (including Title and Abstract Screening and Full Text Review) continues to generate the highest number of queries, followed closely by <strong>Import</strong> and <strong>DE2</strong>, highlighting these as key priority areas for users. <strong>Notably, tickets tagged with DE1 are steadily increasing and are now approaching the top five most common platform stage-related issues.</strong>
-            </p>
-            <section class="card graph-container ml-8">
-                <div class="bar-wrapper">
-                    <div class="bar-label">Screening</div>
-                    <div class="bar-scale">
-                        <!-- Data for the bar and tooltip -->
-                        <div class="bar" style="width: calc((1425 / 1600) * 100%); background-color: #002358;" data-tooltip="1425 tickets"></div>
                     </div>
-                </div>
-
-                <div class="bar-wrapper">
-                    <div class="bar-label">Import</div>
-                    <div class="bar-scale">
-                        <div class="bar" style="width: calc((1227 / 1600) * 100%); background-color: #3E5AD8;" data-tooltip="1227 tickets"></div>
-                    </div>
-                </div>
-
-                <div class="bar-wrapper">
-                    <div class="bar-label">DE2</div>
-                    <div class="bar-scale">
-                        <div class="bar" style="width: calc((754 / 1600) * 100%); background-color: #0E8570;" data-tooltip="754 tickets"></div>
-                    </div>
-                </div>
-
-                <div class="x-axis">
-                    <div class="x-axis-label">0</div>
-                    <div class="x-axis-label">200</div>
-                    <div class="x-axis-label">400</div>
-                    <div class="x-axis-label">600</div>
-                    <div class="x-axis-label">800</div>
-                    <div class="x-axis-label">1,000</div>
-                    <div class="x-axis-label">1,200</div>
-                    <div class="x-axis-label">1,600</div>
-                </div>
-            </section>
-
-
-            <h3 class="text-2xl font-bold text-left mb-2 mt-16 section-title ml-8">2.2. Breakdown of Query Types per Stage (Top 3 Stages)</h3>
-            <!-- Moved paragraph and chart here -->
-            <p class="text-left text-gray-600 mb-8 ml-8">
-                This bar chart shows the top 3 query types<sup>c</sup> per review stage excluding general queries<sup>d</sup>.
-            </p>
-
-            <div class="card p-1 ml-8">
-                <canvas id="combinedChart" width="800" height="400"></canvas>
-
-                <section class="legend-container mb-4">
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #0E8570;"></span>
-                        Top 1 
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #D04457;"></span>
-                        Top 2 
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #402DB3;"></span>
-                        Top 3 
-                    </div>
-                </section>
-            </div>
-            <p class="footnote mt-8 text-left">c - Query types are queries that require investigation or resolution.<br>d - General queries are tickets that do not require investigation or resolution, including general questions, requests already covered by existing processes or the Knowledge Base (e.g., how-to articles), expected platform behavior, CM requests outside standard services, tickets with no user follow-up, cases without platform functionality issues, external user issues, GrooveHQ autotagging errors, spam emails, and tickets incorrectly tagged by CMs.</p>
-
-            <script>
-                window.addEventListener('load', function() {
-                    const canvas = document.getElementById('combinedChart');
-                    if (!canvas) {
-                        console.error("Canvas element for combinedChart not found!");
-                        return;
-                    }
-                    const ctx = canvas.getContext('2d');
-
-                    // Original data structure
-                    const rawCombinedData = [
-                        {
-                            category: 'Screening',
-                            segments: [
-                                { label: 'General Queries', value: 1200, color: '#586196' },
-                                { label: 'Undo vote', value: 99, color: '#0E8570' },
-                                { label: 'Reviewer mode', value: 81, color: '#D04457' },
-                                { label: 'Sorting options', value: 45, color: '#402DB3' },
-                                { label: 'Other', value: 75, color: '#9b59b6' }
-                            ]
-                        },
-                        {
-                            category: 'Import',
-                            segments: [
-                                { label: 'General Queries', value: 1000, color: '#586196' },
-                                { label: 'Incompatible format', value: 125, color: '#0E8570' },
-                                { label: 'Local issues', value: 34, color: '#D04457' },
-                                { label: 'Missing info', value: 28, color: '#402DB3' },
-                                { label: 'Other', value: 63, color: '#9b59b6' }
-                            ]
-                        },
-                        {
-                            category: 'DE2',
-                            segments: [
-                                { label: 'General Queries', value: 560, color: '#586196' },
-                                { label: 'Multiple templates', value: 47, color: '#0E8570' },
-                                { label: 'PDF copy-paste', value: 37, color: '#D04457' },
-                                { label: 'Load more', value: 21, color: '#402DB3' },
-                                { label: 'Other', value: 35, color: '#9b59b6' }
-                            ]
-                        }
-                    ];
-
-                    // Process data to keep only top 3 non-general queries and calculate new total
-                    const combinedData = rawCombinedData.map(categoryData => {
-                        // Filter out 'General Queries' and 'Other'
-                        const filteredSegments = categoryData.segments.filter(s =>
-                            s.label !== 'General Queries' && s.label !== 'Other'
-                        );
-
-                        // Sort by value descending and take top 3
-                        const top3Segments = filteredSegments.sort((a, b) => b.value - a.value).slice(0, 3);
-
-                        // Recalculate total based on top 3
-                        const newTotal = top3Segments.reduce((sum, s) => sum + s.value, 0);
-
-                        return {
-                            category: categoryData.category,
-                            total: newTotal, // This is the sum of the top 3 segments
-                            segments: top3Segments
-                        };
-                    });
-
-
-                    function getCanvasDimensions() {
-                        const dpr = window.devicePixelRatio || 1;
-                        const rect = canvas.getBoundingClientRect(); // Use getBoundingClientRect for reliable dimensions
-                        let displayWidth = rect.width;
-                        let displayHeight = rect.height;
-                        
-                        // Fallback if dimensions are still zero
-                        if (displayWidth === 0) displayWidth = 600; // sensible default
-                        if (displayHeight === 0) displayHeight = 400; // sensible default
-
-                        return {
-                            displayWidth: displayWidth,
-                            displayHeight: displayHeight,
-                            dpr: dpr,
-                            scaledWidth: displayWidth * dpr,
-                            scaledHeight: displayHeight * dpr
-                        };
-                    }
-
-                    function drawCombinedChart() {
-                        const { displayWidth, displayHeight, dpr, scaledWidth, scaledHeight } = getCanvasDimensions();
-
-                        canvas.width = scaledWidth;
-                        canvas.height = scaledHeight;
-                        ctx.scale(dpr, dpr);
-
-                        ctx.clearRect(0, 0, displayWidth, displayHeight); // Clear using unscaled dimensions
-
-                        const margin = { top: 30, right: 40, bottom: 40, left: 120 };
-                        const chartWidth = displayWidth - margin.left - margin.right;
-                        const barHeight = 40;
-                        const barSpacing = 30;
-
-                        // Draw bars for each category
-                        combinedData.forEach((categoryData, catIndex) => {
-                            const y = margin.top + catIndex * (barHeight + barSpacing);
-                            let currentX = margin.left;
-
-                            categoryData.segments.forEach(segment => {
-                                // Calculate segment width based on its percentage of the category's total
-                                const segmentWidth = (segment.value / categoryData.total) * chartWidth;
-                                
-                                ctx.fillStyle = segment.color;
-                                ctx.fillRect(currentX, y, segmentWidth, barHeight);
-
-                                // Display percentage and label on the bar segment
-                                if (segmentWidth > 30) { // Only label if segment is wide enough
-                                    const percentage = (segment.value / categoryData.total * 100).toFixed(1);
-                                    ctx.fillStyle = '#FFFFFF';
-                                    ctx.font = 'bold 12px Inter, sans-serif';
-                                    ctx.textAlign = 'center';
-                                    ctx.textBaseline = 'middle';
-                                    
-                                    // Draw percentage
-                                    ctx.fillText(`${percentage}%`, currentX + segmentWidth / 2, y + barHeight / 2 - 8); 
-                                    
-                                    // Draw label
-                                    ctx.font = '10px Inter, sans-serif'; // Smaller font for label
-                                    ctx.fillText(segment.label, currentX + segmentWidth / 2, y + barHeight / 2 + 8); 
-                                }
-                                currentX += segmentWidth;
-                            });
-
-                            // Category Label (Y-axis)
-                            ctx.fillStyle = '#333333';
-                            ctx.font = 'bold 16px Inter, sans-serif';
-                            ctx.textAlign = 'right';
-                            ctx.textBaseline = 'middle';
-                            ctx.fillText(categoryData.category, margin.left - 10, y + barHeight / 2);
-                        });
-
-                        // X-axis (bottom)
-                        ctx.strokeStyle = '#cccccc';
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(margin.left, margin.top + combinedData.length * (barHeight + barSpacing) - barSpacing + barHeight);
-                        ctx.lineTo(margin.left + chartWidth, margin.top + combinedData.length * (barHeight + barSpacing) - barSpacing + barHeight);
-                        ctx.stroke();
-
-                        // X-axis labels (percentages)
-                        ctx.fillStyle = '#666666';
-                        ctx.font = '12px Inter, sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'top';
-                        const percentageTicks = [0, 25, 50, 75, 100];
-                        percentageTicks.forEach(tickPercent => {
-                            const tickX = margin.left + (tickPercent / 100) * chartWidth;
-                            ctx.fillText(`${tickPercent}%`, tickX, margin.top + combinedData.length * (barHeight + barSpacing) - barSpacing + barHeight + 5);
-                        });
-
-                        // Removed X-axis Title as requested
-                    }
-
-                    // Initial draw
-                    drawCombinedChart();
-
-                    // Redraw on window resize
-                    window.addEventListener('resize', drawCombinedChart);
-                });
-            </script>
-        </section>
-
-        <!-- Moved sections 2.3, 2.4, 2.5, 2.6 inside the main "groovehq-deep-dive" section -->
-        <section id="pain-points" class="mb-16 ml-8">
-            <h3 class="text-2xl font-bold text-left mb-2 section-title">2.3. Users' Pain Points</h3>
-            <!-- Paragraph now left-aligned and without max-width -->
-            <p class="text-left text-gray-600 mb-8">
-                Areas of frustration and friction <br>
-                Stakeholders: Product and Engineering, Academic Success
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="card">
-                    <h3 class="text-2xl font-bold mb-4" style="color: #003f5c;">Account Merge Requests</h3>
-                    <ul class="space-y-4 text-gray-700">
-                        <li class="flex items-start"><span class="font-bold text-lg mr-3" style="color: #ef5675;">&#128553;</span><span><strong class="block">Users creating multiple accounts (individual and institution) and then asking to merge accounts.</strong><br> CM Impact rating<sup>e</sup>: 3<br>Ticket Reach<sup>f</sup>: Approx 80% of non-general query<sup>d</sup> related "Acct mgmt"-tagged tickets.</span></li>
-                    </ul>
-                </div>
-                <div class="card">
-                    <h3 class="text-2xl font-bold mb-4" style="color: #003f5c;">Invitation Failures</h3>
-                    <ul class="space-y-4 text-gray-700">
-                        <li class="flex items-start"><span class="font-bold text-lg mr-3" style="color: #ff764a;">&#128553;</span><span><strong class="block">Organisational membership and review invitations expiring without being clicked or not reaching the user in the first first place.</strong><br> CM Impact rating<sup>e</sup>: 3<br>Ticket Reach<sup>f</sup>: Approx 80% of non-general query<sup>d</sup> related "Invitation Issue"-tagged tickets.</span></li>
-                    </ul>
-                </div>
-                <div class="card">
-                    <h3 class="text-2xl font-bold mb-4" style="color: #003f5c;">User-enabled Review Reset</h3>
-                    <ul class="space-y-4 text-gray-700">
-                        <li class="flex items-start"><span class="font-bold text-lg mr-3" style="color: #ffa600;">&#128553;</span><span><strong class="block">Users want to reset their own reviews because of wrong import or change in the search strategy.</strong><br> CM Impact rating<sup>e</sup>: 3<br>Ticket Reach<sup>f</sup>: Approx 80% of non-general query<sup>d</sup> related "Reset"-tagged tickets.</span></li>
-                    </ul>
-                </div>
-            </div>
-            <p class="footnote mt-8 text-left">d - General queries are tickets that do not require investigation or resolution, including general questions, requests already covered by existing processes or the Knowledge Base (e.g., how-to articles), expected platform behavior, CM requests outside standard services, tickets with no user follow-up, cases without platform functionality issues, external user issues, GrooveHQ autotagging errors, spam emails, and tickets incorrectly tagged by CMs.<br>e - Impact ratings: 1 = Low impact (minor annoyance, can wait); 2 = Medium impact (some disruption, feasible workaround available that is not time consuming for the CM or the user); 3 = High impact (blocks user from access or resuming work, negatively affects trust, a strong valid need for the user, negatively impacts the Community team's efficiency)<br>f - The number of GrooveHQ tickets reported per pain point<br></p>
-        </section>
-
-        <!-- Section 2.4. Wishlist and Feedback (formerly #audits) has been removed -->
-
-        <section id="regional-distribution" class="mb-16 ml-8">
-            <h3 class="text-2xl font-bold text-left mb-4 section-title">2.4. Regional Insights</h3>
-            <p class="text-left text-gray-600 mb-8"> <!-- Removed max-w-3xl mx-auto for left alignment -->
-                This pie chart illustrates the geographical distribution of our ticket senders based on the email domains.
-            </p>
-            
-            <div class="card p-6 flex justify-start items-center flex-col"> <!-- Added card class and padding, and flex-col for stacking -->
-                <canvas id="regionalChart" width="600" height="500"></canvas>
-            
-                <div class="flex flex-wrap justify-center mt-4 text-gray-700">
-                    <!-- Legend items based on the chart's data -->
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #67E6B4;"></span>
-                        NA (34.5%)
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #FDBC95;"></span>
-                        EMEA (25.5%)
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #FF6E7F;"></span>
-                        APAC (19.7%)
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #A7007E;"></span>
-                        Free Email Domains<sup>g</sup>&nbsp;(12.1%)
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color-box" style="background-color: #51B776;"></span>
-                        ROW (8.3%)
+                    <div class="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                        <p class="text-sm text-slate-700 leading-relaxed italic">
+                            <span class="font-bold not-italic" style="color: #002358;"></span> 
+                            Untagged tickets were primarily caused by the Pain Point tag not being included during the creation of CRs 3, 4, 5, & 6. 
+                        </p>
                     </div>
                 </div>
             </div>
-            <p class="footnote mt-8 text-left">g - Generic email providers such as gmail.com, yahoo.com, hotmail.com, etc.</p>
-            
-            <script>
-                // This script draws the Regional Insights pie chart
-                window.addEventListener('load', function() {
-                    console.log("Attempting to load regionalChart script...");
-                    const canvas = document.getElementById('regionalChart');
-                    if (!canvas) {
-                        console.error("regionalChart canvas element not found!");
-                        return;
-                    }
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) {
-                        console.error("Failed to get 2D context for regionalChart!");
-                        return;
-                    }
-                    console.log("regionalChart canvas and context found.");
-            
-                    const data = [
-                        { label: 'NA', value: 34.5, users: 6770, color: '#67E6B4', example: 'NA: 6770 users' }, /* Changed color */
-                        { label: 'EMEA', value: 25.5, users: 4997, color: '#FDBC95', example: 'EMEA: 4997 users' }, /* Changed color */
-                        { label: 'APAC', value: 19.7, users: 3859, color: '#FF6E7F', example: 'APAC: 3859 users' }, /* Changed color */
-                        { label: 'Unknown', value: 12.1, users: 2379, color: '#A7007E', example: 'Unknown: 2379 users' }, /* Changed color */
-                        { label: 'ROW', value: 8.3, users: 1622, color: '#51B776', example: 'ROW: 1622 users' }  /* Changed color */
-                    ];
-            
-                    function getCanvasDimensions() {
-                        const dpr = window.devicePixelRatio || 1;
-                        const rect = canvas.getBoundingClientRect();
-                        let displayWidth = rect.width;
-                        let displayHeight = rect.height;
-                        
-                        console.log(`Initial regionalChart displayWidth: ${displayWidth}, displayHeight: ${displayHeight}`);
+        </div>
 
-                        // Fallback/default if dimensions are zero
-                        if (displayWidth === 0) displayWidth = 600;
-                        if (displayHeight === 0) displayHeight = 500; // Use a reasonable default height
-
-                        canvas.width = displayWidth * dpr;
-                        canvas.height = displayHeight * dpr;
-                        ctx.scale(dpr, dpr);
-            
-                        ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-            
-                        const chartWidth = displayWidth;
-                        const chartHeight = displayHeight;
-            
-                        const radiusMultiplier = 0.9;
-                        const mainRadius = Math.min(chartWidth / 2, chartHeight / 2) * radiusMultiplier;
-                        const mainCenterX = chartWidth / 2;
-                        const mainCenterY = chartHeight / 2;
-                        
-                        console.log(`Calculated regionalChart: centerX=${mainCenterX}, centerY=${mainCenterY}, radius=${mainRadius}`);
-                        return {
-                            displayWidth,
-                            displayHeight,
-                            dpr,
-                            scaledWidth: displayWidth * dpr,
-                            scaledHeight: displayHeight * dpr,
-                            centerX: mainCenterX,
-                            centerY: mainCenterY,
-                            radius: mainRadius
-                        };
-                    }
-            
-                    function drawChart() {
-                        console.log("Drawing regionalChart...");
-                        const { displayWidth, displayHeight, centerX, centerY, radius } = getCanvasDimensions();
-            
-                        let startAngle = 0;
-                        const total = data.reduce((sum, item) => sum + item.value, 0);
-                        console.log(`RegionalChart total value: ${total}`);
-
-                        data.forEach(item => {
-                            const sliceAngle = (item.value / total) * Math.PI * 2;
-                            const endAngle = startAngle + sliceAngle;
-            
-                            ctx.fillStyle = item.color;
-                            ctx.beginPath();
-                            ctx.moveTo(centerX, centerY);
-                            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                            ctx.closePath();
-                            ctx.fill();
-            
-                            const midAngle = startAngle + sliceAngle / 2;
-                            const textRadius = radius * 0.7;
-                            const textX = centerX + Math.cos(midAngle) * textRadius;
-                            const textY = centerY + Math.sin(midAngle) * textRadius;
-            
-                            ctx.fillStyle = '#FFFFFF';
-                            ctx.font = 'bold 14px Inter, sans-serif';
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'middle';
-                            ctx.fillText(`${item.value}%`, textX, textY);
-                            console.log(`Drew slice for ${item.label}: ${item.value}%`);
-            
-                            startAngle = endAngle;
-                        });
-                        console.log("Finished drawing regionalChart.");
-                    }
-            
-                    // Use setTimeout with a small delay to ensure rendering context is ready
-                    setTimeout(() => {
-                        drawChart();
-                    }, 100); // Small delay
-                    
-                    window.addEventListener('resize', () => {
-                        console.log("RegionalChart: Resizing...");
-                        drawChart();
-                    });
-                });
-            </script>
-        </section>
-
-        <section id="domain-frequency" class="mb-16 ml-8">
-            <h3 class="text-2xl font-bold text-left mb-2 section-title">2.5. Institutional Insights</h3>
-            <!-- Paragraph now left-aligned and without max-width -->
-            <p class="text-left text-gray-600 mb-8">
-                This bar chart displays the top three email domains used by users in each region.
-            </p>
-            <div class="card chart-wrapper mb-8 p-6"> <!-- Added card class and padding -->
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-left">Institutional Domains</h3> <!-- Changed to text-left -->
-                <div class="relative" style="height: 400px;">
-                    <canvas id="regionalInstitutionalChart" width="800" height="400"></canvas>
+        <!-- IR Legend Section -->
+        <div class="glass-card p-8 mb-8 border border-indigo-100 bg-white/40">
+            <h3 class="text-xl font-bold mb-6 flex items-center gap-2" style="color: #002358;">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                CR legend
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <span class="w-6 h-6 flex-shrink-0 bg-indigo-600 text-white text-[10px] font-bold rounded-md flex items-center justify-center">CR 1</span>
+                    <span class="text-sm font-semibold text-slate-700">Expired invite</span>
+                </div>
+                <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <span class="w-6 h-6 flex-shrink-0 bg-indigo-600 text-white text-[10px] font-bold rounded-md flex items-center justify-center">CR 2</span>
+                    <span class="text-sm font-semibold text-slate-700">Invitation Expired Create an Individual account</span>
+                </div>
+                <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <span class="w-6 h-6 flex-shrink-0 bg-indigo-600 text-white text-[10px] font-bold rounded-md flex items-center justify-center">CR 3</span>
+                    <span class="text-sm font-semibold text-slate-700">B2B resend invite - existing account</span>
+                </div>
+                <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <span class="w-6 h-6 flex-shrink-0 bg-indigo-600 text-white text-[10px] font-bold rounded-md flex items-center justify-center">CR 4</span>
+                    <span class="text-sm font-semibold text-slate-700">B2B Resend invite - no account</span>
+                </div>
+                <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <span class="w-6 h-6 flex-shrink-0 bg-indigo-600 text-white text-[10px] font-bold rounded-md flex items-center justify-center">CR 5</span>
+                    <span class="text-sm font-semibold text-slate-700">Completed invitation process for org accounts</span>
+                </div>
+                <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <span class="w-6 h-6 flex-shrink-0 bg-indigo-600 text-white text-[10px] font-bold rounded-md flex items-center justify-center">CR 6</span>
+                    <span class="text-sm font-semibold text-slate-700">Accept an invitation</span>
                 </div>
             </div>
+        </div>
+
+        <!-- Charts Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+            <div class="glass-card p-8">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold" style="color: #002358;">Distribution</h3>
+                    <p class="text-slate-500 text-sm">Volume of tickets per CR</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card p-8">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold" style="color: #002358;">Tagging health</h3>
+                    <p class="text-slate-500 text-sm">% of tickets tagged with Pain Point per CR</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ratioChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table: Detailed IR Audit -->
+        <div class="glass-card overflow-hidden mb-10 border-slate-200">
+            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
+                <h3 class="text-xl font-bold" style="color: #002358;">Detailed breakdown</h3>
+                <div class="flex gap-2 text-xs">
+                    <span class="flex items-center gap-1 text-slate-400 font-bold"><span class="w-2 h-2 rounded-full" style="background-color: #A7007E;"></span> Tagged</span>
+                    <span class="flex items-center gap-1 text-slate-400 font-bold"><span class="w-2 h-2 rounded-full" style="background-color: #0E8570;"></span> Untagged</span>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50/50">
+                        <tr class="text-slate-400 text-[10px] font-black uppercase tracking-[0.15em]">
+                            <th class="px-8 py-5">Identifier</th>
+                            <th class="px-8 py-5">Volume</th>
+                            <th class="px-8 py-5">Pain Point Tag Ratio</th>
+                            <th class="px-8 py-5">Context</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-8 py-6">
+                                <span class="font-bold" style="color: #002358;">CR 1</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="font-bold text-slate-700">220</span>
+                                <span class="text-xs text-slate-400 block">43.7% of total</span>
+                            </td>
+                            <td class="px-8 py-6 w-72">
+                                <div class="flex items-center justify-between text-[10px] font-bold mb-1">
+                                    <span style="color: #A7007E;">80.5%</span>
+                                    <span style="color: #0E8570;">19.5%</span>
+                                </div>
+                                <div class="progress-bar-bg flex mb-1">
+                                    <div class="progress-bar-fill" style="width: 80.5%; background-color: #A7007E;"></div>
+                                    <div class="progress-bar-fill" style="width: 19.5%; background-color: #0E8570;"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    <span>177 tickets</span>
+                                    <span>43 tickets</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-slate-500 text-sm leading-relaxed">Majority auto-tagged. <span class="font-semibold italic" style="color: #002358;">Investigate:</span> Occational Groove deletion of Pain Point tag after CR-initiated auto-tagging.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-8 py-6">
+                                <span class="font-bold" style="color: #002358;">CR 2</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="font-bold text-slate-700">18</span>
+                                <span class="text-xs text-slate-400 block">3.6% of total</span>
+                            </td>
+                            <td class="px-8 py-6 w-72">
+                                <div class="flex items-center justify-between text-[10px] font-bold mb-1">
+                                    <span style="color: #A7007E;">100%</span>
+                                </div>
+                                <div class="progress-bar-bg mb-1">
+                                    <div class="progress-bar-fill" style="width: 100%; background-color: #A7007E;"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    <span>18 tickets</span>
+                                    <span></span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-slate-500 text-sm leading-relaxed">Full tag auto-application via CR.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-8 py-6">
+                                <span class="font-bold" style="color: #002358;">CR 3</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="font-bold text-slate-700">89</span>
+                                <span class="text-xs text-slate-400 block">17.7% of total</span>
+                            </td>
+                            <td class="px-8 py-6 w-72">
+                                <div class="flex items-center justify-between text-[10px] font-bold mb-1">
+                                    <span style="color: #A7007E;">3.4%</span>
+                                    <span style="color: #0E8570;">96.6%</span>
+                                </div>
+                                <div class="progress-bar-bg flex mb-1">
+                                    <div class="progress-bar-fill" style="width: 3.4%; background-color: #A7007E;"></div>
+                                    <div class="progress-bar-fill" style="width: 96.6%; background-color: #0E8570;"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    <span>3 tickets</span>
+                                    <span>86 tickets</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-slate-500 text-sm leading-relaxed">No Pain Point auto-tag until 10 Mar 2026. <span class="bg-indigo-100 px-1.5 py-0.5 rounded font-bold text-[10px]" style="color: #002358;">3 manual tags by CM</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-8 py-6">
+                                <span class="font-bold" style="color: #002358;">CR 4</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="font-bold text-slate-700">63</span>
+                                <span class="text-xs text-slate-400 block">12.5% of total</span>
+                            </td>
+                            <td class="px-8 py-6 w-72">
+                                <div class="flex items-center justify-between text-[10px] font-bold mb-1">
+                                    <span style="color: #A7007E;">4.8%</span>
+                                    <span style="color: #0E8570;">95.2%</span>
+                                </div>
+                                <div class="progress-bar-bg flex mb-1">
+                                    <div class="progress-bar-fill" style="width: 4.8%; background-color: #A7007E;"></div>
+                                    <div class="progress-bar-fill" style="width: 95.2%; background-color: #0E8570;"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    <span>3 tickets</span>
+                                    <span>60 tickets</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-slate-500 text-sm leading-relaxed">No Pain Point auto-tag until 10 Mar 2026. <span class="bg-indigo-100 px-1.5 py-0.5 rounded font-bold text-[10px]" style="color: #002358;">3 manual tags by CM</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-8 py-6">
+                                <span class="font-bold" style="color: #002358;">CR 5</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="font-bold text-slate-700">107</span>
+                                <span class="text-xs text-slate-400 block">21.3% of total</span>
+                            </td>
+                            <td class="px-8 py-6 w-72">
+                                <div class="flex items-center justify-between text-[10px] font-bold mb-1">
+                                    <span style="color: #A7007E;">8.4%</span>
+                                    <span style="color: #0E8570;">91.6%</span>
+                                </div>
+                                <div class="progress-bar-bg flex mb-1">
+                                    <div class="progress-bar-fill" style="width: 8.4%; background-color: #A7007E;"></div>
+                                    <div class="progress-bar-fill" style="width: 91.6%; background-color: #0E8570;"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    <span>9 tickets</span>
+                                    <span>98 tickets</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-slate-500 text-sm leading-relaxed">No Pain Point auto-tag until 10 Mar 2026. <span class="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold text-[10px]">9 manual tags by CM</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-8 py-6">
+                                <span class="font-bold" style="color: #002358;">CR 6</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="font-bold text-slate-700">6</span>
+                                <span class="text-xs text-slate-400 block">1.2% of total</span>
+                            </td>
+                            <td class="px-8 py-6 w-72">
+                                <div class="flex items-center justify-between text-[10px] font-bold mb-1">
+                                    <span style="color: #0E8570;"></span>
+                                    <span style="color: #0E8570;">100%</span>
+                                </div>
+                                <div class="progress-bar-bg flex mb-1">
+                                    <div class="progress-bar-fill" style="width: 100%; background-color: #0E8570;"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    <span></span>
+                                    <span>6 tickets</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-slate-500 text-sm leading-relaxed text-rose-600 font-medium">No Pain Point auto-tag until 10 Mar 2026.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Insights Section -->
+        <div class="glass-card p-10 bg-slate-900 text-white relative overflow-hidden group" style="background-color: #002358;">
+            <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg class="w-48 h-48 text-indigo-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+            </div>
+            <h3 class="text-3xl font-black mb-10 flex items-center gap-4">
+                <span class="w-2 h-8 bg-indigo-500 rounded-full"></span>
+                Core findings & observations
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 relative z-10">
+                <div class="flex gap-5">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-sm font-bold text-white">01</span>
+                    <div>
+                        <p class="text-slate-300 text-base leading-relaxed">The primary driver for the <span class="text-white font-semibold">58.3% untagged rate</span> was the missing Pain Point tag in CRs 3, 4, 5, & 6 (corrected on 10 March 2026).</p>
+                    </div>
+                </div>
+                <div class="flex gap-5">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-sm font-bold text-white">02</span>
+                    <div>
+                        <p class="text-slate-300 text-base leading-relaxed"><span class="text-white font-semibold">CR 1 and CR 5 represent 65%</span> of all tickets that used invitation-related CRs.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-sm font-bold text-white">03</span>
+                    <div>
+                        <p class="text-slate-300 text-base leading-relaxed">CMs sometimes manually add the Pain Point tag to tickets, with the majority of these manual tags applied by Stephanie H.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-sm font-bold text-white">04</span>
+                    <div>
+                        <p class="text-slate-300 text-base leading-relaxed">An anomaly exists (likely a bug) where <span class="text-white font-semibold">Groove occasionally deletes the Pain Point tag</span> automatically after auto-application.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        window.addEventListener('load', function() {
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            Chart.defaults.color = '#94a3b8';
             
-            
-            <script>
-                // Function to wrap labels for better display on the chart
-                function wrapLabel(label) {
-                    const words = label.split('.');
-                    // If the label has more than 2 parts (e.g., 'sydney.edu.au'),
-                    // break it into two lines for readability.
-                    if (words.length > 2) {
-                        return [words[0] + '.', words.slice(1).join('.')];
+            const sharedOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 1500, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#002358',
+                        padding: 12,
+                        titleFont: { size: 13, weight: '700' },
+                        bodyFont: { size: 13 },
+                        cornerRadius: 8,
+                        displayColors: false
                     }
-                    return label;
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9', drawBorder: false },
+                        border: { display: false },
+                        ticks: { font: { weight: '600' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { font: { weight: '700' }, color: '#475569' }
+                    }
                 }
-            
-                // Chart 1: Regional and Institutional Domains
-                window.addEventListener('load', function() {
-                    const regionalInstitutionalCanvas = document.getElementById('regionalInstitutionalChart');
-                    const regionalInstitutionalCtx = regionalInstitutionalCanvas.getContext('2d');
+            };
 
-                    if (!regionalInstitutionalCanvas || !regionalInstitutionalCtx) {
-                        console.error("Canvas or context for regionalInstitutionalChart not found!");
-                        return;
-                    }
-                    console.log("Initializing regionalInstitutionalChart");
-
-                    new Chart(regionalInstitutionalCtx, {
-                        type: 'bar', // Bar chart type
-                        data: {
-                            // Labels for the y-axis, representing different domains
-                            labels: [
-                                'sydney.edu.au',
-                                'deakin.edu.au',
-                                'unimelb.edu.au',
-                                'nhs.net',
-                                'kcl.ac.uk',
-                                'imperial.ac.uk',
-                                'mcmaster.ca',
-                                'mail.utoronto.ca',
-                                'mayo.edu'
-                            ].map(wrapLabel), // Apply the wrapLabel function to all labels
-                            datasets: [{
-                                label: 'Frequency', // Label for the dataset
-                                // Data values corresponding to the labels
-                                data: [227, 165, 144, 134, 119, 98, 112, 111, 111],
-                                // Background colors for each bar, grouped by region
-                                backgroundColor: [
-                                    '#995EEA', '#995EEA', '#995EEA', // APAC (Purple)
-                                    '#3992DB', '#3992DB', '#3992DB', // EMEA (Blue)
-                                    '#FD396E', '#FD396E', '#FD396E'  // NA (Pink)
-                                ],
-                                // Border colors for each bar, slightly darker than background
-                                borderColor: [
-                                    '#7c4bbd', '#7c4bbd', '#7c4bbd',
-                                    '#2e76b0', '#2e76b0', '#2e76b0',
-                                    '#ca2f5a', '#ca2f5a', '#ca2f5a'
-                                ],
-                                borderWidth: 1, // Border width of the bars
-                                borderRadius: 5 // Rounded corners for the bars
-                            }]
-                        },
-                        options: {
-                            responsive: true, // Make the chart responsive
-                            maintainAspectRatio: false, // Do not maintain aspect ratio, allowing custom sizing
-                            indexAxis: 'y', // Set the index axis to 'y' for horizontal bars
-                            scales: {
-                                x: { // X-axis configuration
-                                    beginAtZero: true, // Start the axis from zero
-                                    grid: {
-                                        color: '#e0e0e0' // Color of the grid lines
-                                    },
-                                    ticks: {
-                                        color: '#333', // Color of the tick labels
-                                        font: {
-                                            weight: 'bold' // Font weight for tick labels
-                                        }
-                                    }
-                                },
-                                y: { // Y-axis configuration
-                                    grid: {
-                                        display: false
-                                    },
-                                    ticks: {
-                                        color: '#333', // Color of the tick labels
-                                        font: {
-                                            size: 14 // Font size for tick labels
-                                        }
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'right',
-                                    labels: {
-                                        color: '#333',
-                                        font: {
-                                            size: 12
-                                        },
-                                        // Custom function to generate legend labels based on regions
-                                        generateLabels: function(chart) {
-                                            const colors = {
-                                                'APAC': '#995EEA',
-                                                'EMEA': '#3992DB',
-                                                'NA': '#FD396E'
-                                            };
-                                            return Object.keys(colors).map(region => ({
-                                                text: region, // Text for the legend item
-                                                fillStyle: colors[region], // Fill color of the legend box
-                                                strokeStyle: colors[region], // Stroke color of the legend box
-                                                lineWidth: 1,
-                                                pointStyle: 'rectRounded' // Style of the legend marker
-                                            }));
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    enabled: true, // Enable tooltips on hover
-                                    backgroundColor: '#003f5c', // Background color of the tooltip
-                                    titleFont: {
-                                        size: 16, // Font size for tooltip title
-                                        weight: 'bold'
-                                    },
-                                    bodyFont: {
-                                        size: 14
-                                    },
-                                    callbacks: {
-                                        // Custom callback to format the tooltip title
-                                        title: function(tooltipItems) {
-                                            const item = tooltipItems[0];
-                                            let label = item.chart.data.labels[item.dataIndex];
-                                            if (Array.isArray(label)) {
-                                                return label.join(' ');
-                                            } else {
-                                                return label;
-                                            }
-                                        }
-                                    }
+            const ctx0 = document.getElementById('overallDistributionChart').getContext('2d');
+            new Chart(ctx0, {
+                type: 'pie',
+                data: {
+                    labels: ['Tagged', 'Untagged'],
+                    datasets: [{
+                        data: [210, 293],
+                        backgroundColor: ['#A7007E', '#0E8570'],
+                        hoverOffset: 4,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const value = context.raw;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${value} (${percentage}%)`;
                                 }
                             }
                         }
-                    });
-                });
-            </script>
-        </section>
+                    }
+                }
+            });
 
-        <section id="user-wishlist" class="mb-8 ml-8"> <!-- Changed mb-16 to mb-8 -->
-            <h3 class="text-2xl font-bold text-left mb-2 section-title">2.6. User Wishlist</h3>
-            <p class="text-left text-gray-600 mb-2">
-                A sample<sup>h</sup> of what our users would love to see in the platform.
-            </p>
-            <div class="card p-6">
-                <ul class="list-none text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Filter studies by the presence or absence of notes</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Turn off auto-detection of duplicates</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Filter studies by the presence or absences of tags</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>DE1 single reviewer mode <span class="text-green-600">(Live)</span></span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Hide/unhide Notes</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Ability to change the QA1 judgements</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Hide journal name/authors during screening</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Start from scratch QA template</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Export to Excel when using DE1 <span class="text-green-600">(Live)</span></span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Revert a review to a previous version</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Export duplicate list</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #003f5c;">&#9733;</span><span>Merging reviews</span></li>
-                </ul>
-            </div>
-            <p class="footnote mt-8 text-left">h - The sample was based on monthly audits of tickets (one ticket per month) tagged with Feature request, Feedback and DE1.</p>
-        </section>
+            const ctx1 = document.getElementById('volumeChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['CR 1', 'CR 2', 'CR 3', 'CR 4', 'CR 5', 'CR 6'],
+                    datasets: [{
+                        data: [220, 18, 89, 63, 107, 6],
+                        backgroundColor: '#002358',
+                        hoverBackgroundColor: '#001a42',
+                        borderRadius: 10,
+                        barThickness: 32
+                    }]
+                },
+                options: sharedOptions
+            });
 
-        <section id="user-feedback" class="mb-16 ml-8">
-            <h3 class="text-2xl font-bold text-left mb-2 section-title">2.7. User Feedback</h3>
-            <p class="text-left text-gray-600 mb-2">
-                A sample<sup>h</sup> of what our users think of us.
-            </p>
-            <div class="card p-6">
-                <ul class="list-none space-y-2 text-gray-700">
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #ffa600;">&#128172;</span><span>"1"</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #ffa600;">&#128172;</span><span>"2"</span></li>
-                    <li class="flex items-start"><span class="text-xl mr-3" style="color: #ffa600;">&#128172;</span><span>"3"</span></li>
-                </ul>
-            </div>
-            <p class="footnote mt-8 text-left">h - The sample was based on monthly audits of tickets (one ticket per month) tagged with Feature request, Feedback and DE1.</p>
-        </section>
-
-        </section> <!-- Closing groovehq-deep-dive section -->
-
-<hr class="border-t-2 border-gray-200 my-16"> <!-- Visual separator -->
-
-        <section id="looking-ahead" class="mb-16">
-            <h2 class="text-3xl font-bold text-left mb-2 section-title">3. Looking Ahead FY26</h2>
-            <p class="text-left text-gray-600 mb-8">
-                What can we do better moving forward?<br>
-                Stakeholders: All
-            </p>
-            <div class="card p-8">
-                <p class="text-left text-gray-600 mb-4">
-                    The insights from this report will guide our next steps in FY26. Specifically, we will:
-                </p>
-                <ul class="list-none space-y-4 text-gray-700 leading-relaxed">
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-4" style="color: #003f5c;">&#128202;</span>
-                        <div>
-                            <h4 class="font-bold text-lg">Combine findings from this report with other key feedback sources</h4>
-                            <p class="text-gray-600">Including webinar Q&As, webinar surveys, user conversations during our face-to-face interactions, Sales team and Academic Success team input, and knowledge base traffic analysis to:</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start ml-8">
-                        <span class="text-xl mr-2" style="color: #003f5c;">&ndash;</span>
-                        <p class="text-gray-600">Identify gaps in our self-service resources<sup>i</sup></p>
-                    </li>
-                    <li class="flex items-start ml-8">
-                        <span class="text-xl mr-2" style="color: #003f5c;">&ndash;</span>
-                        <p class="text-gray-600">Prioritise updates and expansion of our knowledge base and webinar content</p>
-                    </li>
-                    <li class="flex items-start ml-8">
-                        <span class="text-xl mr-2" style="color: #003f5c;">&ndash;</span>
-                        <p class="text-gray-600">Share recurring user pain points and wishlist items with the P&E team</p>
-                    </li>
-                    <li class="flex items-start mt-4">
-                        <span class="text-2xl mr-4" style="color: #003f5c;">&#128197;</span>
-                        <div>
-                            <h4 class="font-bold text-lg">Generate this report quarterly</h4>
-                            <p class="text-gray-600">To monitor emerging trends and track our progress over time.</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-4" style="color: #003f5c;">&#128450;</span>
-                        <div>
-                            <h4 class="font-bold text-lg">Feed insights back into our workflows</h4>
-                            <p class="text-gray-600">To ensure we are continuously improving our support offerings and resources.</p>
-                        </div>
-                    </li>
-                </ul>
-                <p class="text-left text-gray-600 mt-4">
-                    These efforts will support our ongoing priority of maintaining a low median response time by enabling users to find what they need more quickly and reducing the volume of repeat or preventable queries.
-                </p>
-            </div>
-            <p class="footnote mt-8 text-left">i - Self-service resources are content, or tools that allow users to find answers or solve problems on their own without needing to contact support.</p>
-        </section>
-
-        <hr class="border-t-2 border-gray-200 my-16"> <!-- Visual separator -->
-
-        <!-- Notes Section -->
-        <section id="notes" class="mb-16">
-            <div class="info-section">
-                <h2 class="text-2xl font-bold text-left mb-2 section-title">Notes</h2>
-                <p class="text-left text-gray-600 mb-8"> <!-- Removed max-w-3xl mx-auto -->
-                    <ul class="list-disc list-inside text-gray-700 space-y-2">
-                        <li>Raw data can be accessed <a href="https://drive.google.com/drive/folders/1xXCkuP1W5ORsc97fyOXA7p-KVwlVR-2u?usp=drive_link" target="_blank" class="text-blue-600 hover:underline">here</a> for more information.</li>
-                        <li>Disclaimer: The data presented in the GrooveHQ Deep Dive section was based on the analysis of tickets that were tagged by the CM team. Note that some relevant tickets may not have been tagged, while some irrelevant tickets may have been incorrectly tagged.</li>
-                    </ul>
-                </p>
-            </div>
-        </section>
-    </main>
-
-    <footer class="bg-gray-800 text-white mt-16">
-        <div class="container mx-auto px-6 py-4 text-center text-sm">
-            <p>&copy; 2025 Covidence</p>
-        </div>
-    </footer>
-
+            const ctx2 = document.getElementById('ratioChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['CR 1', 'CR 2', 'CR 3', 'CR 4', 'CR 5', 'CR 6'],
+                    datasets: [{
+                        data: [80.5, 100, 3.4, 4.8, 8.4, 0],
+                        backgroundColor: '#A7007E',
+                        hoverBackgroundColor: '#8a0068',
+                        borderRadius: 10,
+                        barThickness: 32
+                    }]
+                },
+                options: {
+                    ...sharedOptions,
+                    scales: {
+                        ...sharedOptions.scales,
+                        y: {
+                            ...sharedOptions.scales.y,
+                            max: 100,
+                            ticks: { callback: v => v + '%' }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
